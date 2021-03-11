@@ -11,8 +11,7 @@ namespace AuctionHouse.Models
         public Client AddClient()
         {
             Console.Clear();
-            Client client = new Client();
-            client.Address = new Address();
+            Client client = new Client() { Address = new Address() };
             int birthDay = 0;
             int birthMonth = 0;
             int birthYear = 0;

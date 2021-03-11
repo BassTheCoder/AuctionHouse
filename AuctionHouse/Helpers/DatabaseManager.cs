@@ -63,40 +63,43 @@ namespace AuctionHouse.Helpers
             database.ItemsList = items;
         }
 
+        public static void DisplayItem(Item item)
+        {
+            Console.WriteLine("Id: " + item.Id);
+            Console.WriteLine("Name: " + item.Name);
+            Console.WriteLine("Description: " + item.Description);
+            Console.WriteLine("Starting price: " + item.StartingPrice);
+            Console.WriteLine("Minimal price: " + item.MinPrice);
+            Console.Write("Sale price: ");
+            if (item.SalePrice == 0)
+            {
+                Console.WriteLine("Not sold yet!");
+            }
+            else
+            {
+                Console.WriteLine(item.SalePrice + " PLN. Bought by " + item.Owner.Name + " " + item.Owner.Surname);
+            }
+            Console.WriteLine();
+        }
+
         public static void DisplayItems(Database database)
         {
-            Console.Clear();
             Console.WriteLine();
             Console.WriteLine("List of items:");
             Console.WriteLine();
             foreach (Item item in database.ItemsList)
             {
                 Console.WriteLine();
-                Console.WriteLine("Id: " + item.Id);                
-                Console.WriteLine("Name: " + item.Name);
-                Console.WriteLine("Description: " + item.Description);
-                Console.WriteLine("Starting price: " + item.StartingPrice);
-                Console.WriteLine("Minimal price: " + item.MinPrice);
-                Console.Write("Sale price: ");
-                if (item.SalePrice == 0)
-                {
-                    Console.WriteLine("Not sold yet!");
-                }
-                else
-                {
-                    Console.WriteLine(item.SalePrice);
-                }
-                Console.WriteLine();
+                DisplayItem(item);
                 Console.WriteLine("------------------------");
                 Console.WriteLine();
             }
             Console.WriteLine("===========================");
-            Console.WriteLine();            
+            Console.WriteLine();
         }
 
         public static void DisplayClients(Database database)
         {
-            Console.Clear();
             Console.WriteLine();
             Console.WriteLine("List of clients:");
             Console.WriteLine();

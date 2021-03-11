@@ -31,7 +31,7 @@ namespace AuctionHouse
             {
                 return false;
             }
-            
+
         }
 
         public static int GetInt()
@@ -62,5 +62,20 @@ namespace AuctionHouse
             }
         }
 
+        public static bool YesNoValidator(string input)
+        {
+            while (true)
+            {
+                if (input.ToLower() == "y")
+                    return true;
+                else if (input.ToLower() == "n")
+                    return false;
+                else
+                {
+                    Console.WriteLine("Make a choice by typing \"Y\" or \"N\"");
+                    input = Console.ReadLine();
+                }
+            }
+        }
     }
 }

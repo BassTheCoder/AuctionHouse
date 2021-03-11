@@ -10,11 +10,13 @@ namespace AuctionHouse
         static void Main(string[] args)
         {
             Database database = new Database();
+            AuctionService auctionService = new AuctionService();
             DatabaseManager.ReadClientsList(database);
             DatabaseManager.ReadItemsList(database);
 
             while (true)
             {
+                Console.Clear();
                 Console.WriteLine("=== Welcome to the Auction House! ===");
                 Console.WriteLine();
                 Console.WriteLine("[1] Start an auction");
@@ -24,6 +26,7 @@ namespace AuctionHouse
                 Console.WriteLine("[5] Show the list of clients");
                 Console.WriteLine("[0] Exit");
 
+                Console.WriteLine("\nPick an option [0-5]");
                 int input = Validator.GetInt();
                 while (!Validator.ValidateMinMaxInt(input, 0, 5))
                 {
@@ -34,8 +37,8 @@ namespace AuctionHouse
                 switch (input)
                 {
                     case 1:
-
-                        RunAuction.Run(database);
+                        Console.Clear();
+                        auctionService.RunAuction(database);
                         break;
 
                     case 2:
@@ -49,6 +52,7 @@ namespace AuctionHouse
                         break;
 
                     case 4:
+                        Console.Clear();
                         DatabaseManager.DisplayItems(database);
                         Console.WriteLine("Press any key to continue");
                         Console.ReadKey();
@@ -56,6 +60,7 @@ namespace AuctionHouse
                         break;
 
                     case 5:
+                        Console.Clear();
                         DatabaseManager.DisplayClients(database);
                         Console.WriteLine("Press any key to continue");
                         Console.ReadKey();
