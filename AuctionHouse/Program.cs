@@ -24,15 +24,11 @@ namespace AuctionHouse
                 Console.WriteLine("[3] Add a client");
                 Console.WriteLine("[4] Show the list of items");
                 Console.WriteLine("[5] Show the list of clients");
-                Console.WriteLine("[0] Exit");
+                Console.WriteLine("[6] Exit");
 
-                Console.WriteLine("\nPick an option [0-5]");
-                int input = Validator.GetInt();
-                while (!Validator.ValidateMinMaxInt(input, 0, 5))
-                {
-                    Console.WriteLine("Pick an option [0-5]");
-                    input = Validator.GetInt();
-                }
+                int input = -1;
+
+                input = Validator.PickMenuOption(database, input);
 
                 switch (input)
                 {
@@ -67,7 +63,7 @@ namespace AuctionHouse
                         Console.Clear();
                         break;
 
-                    case 0:
+                    case 6:
                         Environment.Exit(0);
                         break;
                 }

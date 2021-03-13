@@ -8,7 +8,7 @@ namespace AuctionHouse.Helpers
 {
     class DatabaseManager
     {
-        private static string filePath = System.IO.Directory.GetCurrentDirectory();
+        private static readonly string filePath = Directory.GetCurrentDirectory();
         private const string clientsListFileName = "clientslist.json";
         private const string itemsListFileName = "itemslist.json";
 
@@ -110,7 +110,7 @@ namespace AuctionHouse.Helpers
                 Console.WriteLine("Surname: " + client.Surname);
                 Console.WriteLine($"Age: {DateTime.Now.Year - client.BirthDate.Year}");
                 Console.Write("Is client adult: ");
-                if (client.IsAdult == true)
+                if (client.IsAdult)
                 {
                     Console.WriteLine("Yes");
                 }

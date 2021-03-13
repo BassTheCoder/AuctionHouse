@@ -58,7 +58,7 @@ namespace AuctionHouse.Models
                 Console.WriteLine("Client's birth date - Month: ");
                 birthMonth = Validator.GetInt();
             }
-            while (!Validator.ValidateMinMaxInt(birthYear, 1, DateTime.Now.Year))
+            while (!Validator.ValidateMinMaxInt(birthYear, 1900, DateTime.Now.Year))
             {
                 Console.WriteLine("Client's birth date - Year: ");
                 birthYear = Validator.GetInt();
