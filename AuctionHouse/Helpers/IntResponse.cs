@@ -4,9 +4,9 @@ using System.Text;
 
 namespace AuctionHouse.Models
 {
-    class BidResult
+    class IntResponse
     {
-        public bool IsSuccess { get; set; }
+        public bool IsStopInvoked { get; set; }
         public int Result { get; set; }
     }
 }

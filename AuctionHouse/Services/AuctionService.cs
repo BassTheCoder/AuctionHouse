@@ -15,59 +15,84 @@ namespace AuctionHouse
         {
             Auction auction = new Auction(database);
 
-            Console.WriteLine();
-
-            auction.DisplayEligibleItems();
-            Console.WriteLine();
-            Console.WriteLine("Start an auction? Y/N\n");
-            IsAuctionRunning = Validator.YesNoValidator(Console.ReadLine());
-
-            if (IsAuctionRunning)
+            if (auction.EligibleItems.Count > 0)
             {
                 Console.WriteLine();
-                auction.StartDate = DateTime.Now;
-                Console.WriteLine("Auction has started on " + auction.StartDate);
+                auction.DisplayEligibleItems();
                 Console.WriteLine();
+                Console.WriteLine("Start an auction? Y/N\n");
+                IsAuctionRunning = Validator.YesNoValidator(Console.ReadLine());
 
-                foreach (Item item in auction.EligibleItems)
+                if (IsAuctionRunning)
                 {
-                    if (IsAuctionRunning)
-                    {
-                        bool shouldContinue = AuctionItem(item, auction.EligibleClients);
+                    Console.Clear();
+                    Console.WriteLine();
+                    auction.StartDate = DateTime.Now;
+                    Console.WriteLine("Auction has started on " + auction.StartDate);
+                    Console.WriteLine();
+                    bool shouldContinue = true;
 
-                        if (!shouldContinue)
+                    while (IsAuctionRunning && shouldContinue)
+                    {
+                        if (auction.EligibleItems.Count > 0 && IsAuctionRunning)
+                        {
+                            Item itemToAuction = auction.EligibleItems.FirstOrDefault();
+                            shouldContinue = AuctionItem(itemToAuction, auction.EligibleClients, auction, database);
+                        }
+                        else
                         {
                             auction.EndDate = DateTime.Now;
                             Console.WriteLine("\nAuction has ended on " + auction.EndDate + " and it lasted " + (auction.EndDate - auction.StartDate));
                             Console.WriteLine("\nPress any key to continue");
                             Console.ReadKey();
+                            shouldContinue = false;
                             IsAuctionRunning = false;
                         }
                     }
                 }
             }
+            else
+            {
+                Console.WriteLine("\nNo eligible items left to auction.\nPress any key to continue...");
+                Console.ReadKey();
+            }
         }
 
-        private bool AuctionItem(Item item, List<Client> clients)
+        private bool AuctionItem(Item item, List<Client> clients, Auction auction, Database database)
         {
+
             bool isItemAuctionRunning = true;
+            bool isStopInvoked = false;
             int clientId = 0;
             int currentBid = 0;
-            int bidsInRow = 0;
+            int bidsInRow = 1;
             int highestBid = 0;
+            Client previousBidder = null;
+
+            Console.WriteLine("Starting an auction for item:\n\n");
+            DatabaseManager.DisplayItem(item);
+            Console.WriteLine();
 
             while (isItemAuctionRunning)
             {
-                Console.WriteLine("Starting an auction for item:\n\n");
-                DatabaseManager.DisplayItem(item);
-                Console.WriteLine();
-
-                while (!Validator.ValidateMinMaxInt(clientId, 1, clients[clients.Count - 1].Id))
+                while (!Validator.ValidateMinMaxInt(clientId, 1, clients.LastOrDefault().Id) && isItemAuctionRunning)
                 {
                     Console.Write("Give ID of a person to place a bid (");
                     DisplayClientsIds(clients);
                     Console.WriteLine("):");
-                    clientId = Validator.GetInt();
+                    IntResponse response = Validator.GetIntOrStop();
+                    if (response.IsStopInvoked)
+                    {
+                        isStopInvoked = true;
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\nStop command has been invoked. The auction has been aborted.\n");
+                        Console.ResetColor();
+                        isItemAuctionRunning = false;
+                    }
+                    else
+                    {
+                        clientId = response.Result;
+                    }
                 }
 
                 Client currentBidder = clients.FirstOrDefault(c => c.Id == clientId);
@@ -79,16 +104,20 @@ namespace AuctionHouse
                     {
                         Console.WriteLine("Bid must be higher than current highest bid - " + highestBid + " PLN.");
 
-                        BidResult currentBidResult = Validator.PlaceBid();
-                        if (currentBidResult.IsSuccess)
+                        IntResponse currentBidResult = Validator.PlaceBid();
+                        if (currentBidResult.IsStopInvoked)
                         {
-                            currentBid = currentBidResult.Result;
+                            isStopInvoked = true;
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\nStop command has been invoked. The auction has been aborted.\n");
+                            Console.ResetColor();
+                            isItemAuctionRunning = false;
                         }
                         else
                         {
-                            isItemAuctionRunning = false;
-                        }    
-                        
+                            currentBid = currentBidResult.Result;
+                        }
+
                     }
                     if (isItemAuctionRunning)
                     {
@@ -98,19 +127,58 @@ namespace AuctionHouse
                         {
                             Console.WriteLine("\nCurrent highest bid is " + highestBid + " PLN. Minimal price (" + item.MinPrice + " PLN) not reached yet!");
                         }
+                        if (currentBidder == previousBidder)
+                        {
+                            bidsInRow++;
+                        }
+                        else
+                        {
+                            bidsInRow = 1;
+                        }
+
+                        if (bidsInRow >= 3 && currentBid > item.MinPrice)
+                        {
+                            SellItem(item, currentBidder, currentBid);
+                            auction.EligibleItems.Remove(item);
+                            DatabaseManager.SaveToFile(database);
+                            Console.ReadKey();
+                            isItemAuctionRunning = false;
+                        }
+                        previousBidder = currentBidder;
                         currentBid = 0;
                         clientId = 0;
                     }
                 }
-                else
+                else if ( currentBidder == null && !isStopInvoked)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("\nThere is no eligible client with such id.\n");
+                    Console.ResetColor();
                     clientId = 0;
                 }
             }
 
-            Console.WriteLine("\nDo you want to start an auction for the next item? Y/N\n");
-            return Validator.YesNoValidator(Console.ReadLine());
+            if (auction.EligibleItems.Count > 0)
+            {
+                Console.WriteLine("\nDo you want to proceed with the auction? Y/N\n");
+                return Validator.YesNoValidator(Console.ReadLine());
+            }
+            else
+            {
+                Console.WriteLine("\nNo eligible items left to auction.\nPress any key to continue...");
+                Console.ReadKey();
+                return false;
+            }
+
+        }
+
+        private void SellItem(Item item, Client client, int price)
+        {
+            item.IsSold = true;
+            item.SaleDate = DateTime.Now;
+            item.SalePrice = price;
+            item.Owner = client;
+            Console.WriteLine("\nThe " + item.Name + " has been sold to " + client.Name + " " + client.Surname + " for " + price + " PLN !!!\n");
         }
 
         private void DisplayClientsIds(List<Client> clientsList)
@@ -123,7 +191,7 @@ namespace AuctionHouse
                 }
                 else
                 {
-                Console.Write(client.Id + ", ");
+                    Console.Write(client.Id + ", ");
                 }
             }
         }

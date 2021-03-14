@@ -71,7 +71,7 @@ namespace AuctionHouse.Helpers
             Console.WriteLine("Starting price: " + item.StartingPrice);
             Console.WriteLine("Minimal price: " + item.MinPrice);
             Console.Write("Sale price: ");
-            if (item.SalePrice == 0)
+            if (!item.IsSold)
             {
                 Console.WriteLine("Not sold yet!");
             }

@@ -1,4 +1,5 @@
-﻿using AuctionHouse.Models;
+﻿using AuctionHouse.Helpers;
+using AuctionHouse.Models;
 using System;
 using System.Text.RegularExpressions;
 
@@ -24,11 +25,11 @@ namespace AuctionHouse
                 Console.WriteLine("\nWarning!");
                 if (database.ClientsList.Count < 1)
                 {
-                    Console.WriteLine("List of clients is empty. Option [1] is impossible.");
+                    Console.WriteLine("List of clients is empty or missing. Option [1] is unavailable.");
                 }
                 if (database.ItemsList.Count < 1)
                 {
-                    Console.WriteLine("List of items is empty. Option [1] is impossible.");
+                    Console.WriteLine("List of items is empty or missing. Option [1] is unavailable.");
                 }
                 Console.WriteLine("\nPick an option [2-6]");
                 input = Validator.GetInt();
@@ -41,7 +42,7 @@ namespace AuctionHouse
             }
         }
 
-        public static BidResult PlaceBid()
+        public static IntResponse PlaceBid()
         {
             while (true)
             {
@@ -50,12 +51,12 @@ namespace AuctionHouse
                     string input = Console.ReadLine();
                     if (input.ToLower() == "stop")
                     {
-                        return new BidResult { IsSuccess = false };
+                        return new IntResponse { IsStopInvoked = true };
                     }
                     else
                     {
                         int number = int.Parse(input);
-                        return new BidResult { IsSuccess = true, Result = number };
+                        return new IntResponse { IsStopInvoked = false, Result = number };
                     }
                 }
                 catch (Exception e)
@@ -79,6 +80,30 @@ namespace AuctionHouse
             }
         }
 
+        public static StringResponse GetStringOrStop(string input, bool shouldContinue)
+        {
+            if (shouldContinue)
+            {
+                if (input.ToLower() == "stop")
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nStop command has been invoked.");
+                    Console.ResetColor();
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
+                    return new StringResponse { IsStopInvoked = true };
+                }
+                else
+                {
+                    return new StringResponse { IsStopInvoked = false, Result = input };
+                }
+            }
+            else
+            {
+                return new StringResponse { IsStopInvoked = true };
+            }
+        }
+
         public static bool ValidateLettersAndNumbersString(string input)
         {
             string pattern = "^[a-zA-Z0-9 ]+$";
@@ -94,6 +119,20 @@ namespace AuctionHouse
 
         }
 
+        public static bool ValidateZipcode(string input)
+        {
+            string pattern = "^[0-9]{5}$";
+            Regex regex = new Regex(pattern);
+            try
+            {
+                return regex.IsMatch(input);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static int GetInt()
         {
             while (true)
@@ -102,6 +141,30 @@ namespace AuctionHouse
                 {
                     int number = int.Parse(Console.ReadLine());
                     return number;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error. " + e.Message);
+                }
+            }
+        }
+
+        public static IntResponse GetIntOrStop()
+        {
+            while (true)
+            {
+                try
+                {
+                    string input = Console.ReadLine();
+                    if (input.ToLower() == "stop")
+                    {
+                        return new IntResponse { IsStopInvoked = true };
+                    }
+                    else
+                    {
+                        int number = int.Parse(input);
+                        return new IntResponse { IsStopInvoked = false, Result = number };
+                    }                                        
                 }
                 catch (Exception e)
                 {
